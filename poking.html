@@ -6,7 +6,8 @@
 </head>
 <body>
 
-<button onclick='ws.send("GGGGGG")'>POKE!</button>
+<button onclick='ws.send("p")'>END!</button>
+<button onclick='ws.send("poke")'>POKE!</button>
 <script type="text/javascript">
 	var ws = new WebSocket("ws://127.0.0.1:9999");
 	ws.onopen = function() {
