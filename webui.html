@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<!--suppress ALL -->
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="moment.js"></script>
+    <script src="http://www.chartjs.org/dist/2.7.1/Chart.js"></script>
+</head>
+<body>
+<div style="width:75%;">
+    <canvas id="canvas"></canvas>
+</div>
+<script src="https://www.gstatic.com/firebasejs/4.6.2/firebase.js"></script>
+<script>
+    // Initialize Firebase
+    var config = {
+        apiKey: "AIzaSyBzAIpzG7fZPYZdqyuKBFsfzoFZj7wwDzY",
+        authDomain: "pjnw2017.firebaseapp.com",
+        databaseURL: "https://pjnw2017.firebaseio.com",
+        projectId: "pjnw2017",
+        storageBucket: "pjnw2017.appspot.com",
+        messagingSenderId: "360303746926"
+    };
+
+
+    firebase.initializeApp(config);
+
+
+    function dataInit() {
+        data_graph = getLoadData(false);
+        config_graph = {
+            type: 'line',
+            data: data_graph,
+            options: {
+                title: {
+                    text: "Chart.js Time Scale"
+                },
+                scales: {
+                    xAxes: [{
+                        type: "time",
+                        time: {
+                            unit: 'minute',
+
+                            tooltipFormat: 'll HH:mm'
+                        },
+                        scaleLabel: {
+                            display: true,
+                            labelString: 'Date'
+                        },
+                        showXLabels: 15
+                    },],
+                    yAxes: [{
+                        scaleLabel: {
+                            display: true,
+                            labelString: 'value'
+                        }
+                    }]
+                },
+                animation: {
+                    duration: 0
+                }
+            }
+        }
+        return config_graph;
+    }
+    function random_rgba(c) {
+        //var r = Math.random;
+        var o = Math.round, s = 255;
+        var r = (c + 15) %255;
+        return 'rgba(' + o(c*s) + ',' + o(r*s) + ',' + o(r*s) + ',' + 0.5 + ')';
+    }
+    function hashCode(str) {
+        var hash = 0;
+        for (var i = 0; i < str.length; i++) {
+            hash = ~~(((hash << 5) - hash) + str.charCodeAt(i));
+        }
+        return hash;
+    }
+
+    String.prototype.hashCode = function() {
+        var hash = 0, i, chr;
+        if (this.length === 0) return hash;
+        for (i = 0; i < this.length; i++) {
+            chr   = this.charCodeAt(i);
+            hash  = ((hash << 5) - hash) + chr;
+            hash |= 0; // Convert to 32bit integer
+        }
+        return hash;
+    };
+
+
+    function getLoadData(k) {
+        var tmpGraph = {
+            label: [],
+            datasets: []
+
+        };
+
+        var ref = firebase.database().ref("Logging");
+        //console.log("Start");
+        ref.once("value").then(
+            function (snapshot) {
+                snapshot.forEach(
+                    function (childSnapshot) {
+
+                        //var color = random_rgba(Math.abs(childSnapshot.key.hashCode())%256)
+                        var hash = childSnapshot.key.hashCode();
+                        var red = (hash & 0xFF0000) >> 16;
+                        var green = (hash & 0x00FF00) >> 8;
+                        var blue = hash & 0x0000FF;
+                        var color = 'rgba('+red%255+','+green%255+','+blue%255+',0.5)';
+
+
+                        temp_data = {
+                            label: '',
+                            data: [],
+                            backgroundColor: color,
+                            borderColor:  color,
+
+                            lineTension:0.1,
+                            fill:true,
+                        }
+
+                        temp_data.label = childSnapshot.key;
+                        if(k){
+                            tmpGraph.labels.push(childSnapshot.key);
+                        }else{
+                            tmpGraph.label.push(childSnapshot.key);
+                        }
+
+
+                        var temp_in_data = [];
+
+                        childSnapshot.forEach(function (e) {
+                            tmp_plotting = {
+                                x: 0,
+                                y: 0
+                            }
+                            tmp_plotting['y'] = e.val()['air'];
+                            tmp_plotting['x'] = new Date(e.val()['timestamp'] * 1000);
+                            temp_in_data.push(tmp_plotting);
+
+                        });
+                        var gg_time = temp_in_data.slice(Math.max(temp_in_data.length - 20, 1))
+                        temp_data.data = gg_time;
+
+
+                        /*childSnapshot.ref.orderByKey().limitToLast(50).once('value')
+                         .then(function (snaps) {
+                         tmp_plotting = {
+                         x: 0,
+                         y: 0
+                         }
+                         snaps.forEach(function (e) {
+                         tmp_plotting['x'] = e.val()['air'];
+                         tmp_plotting['y'] = new Date(e.val()['timestamp'] * 1000);
+                         temp_in_data.push(tmp_plotting);
+                         });
+
+                         console.log(snaps.key)
+                         console.log(temp_in_data)
+
+                         }
+                         )*/
+                        tmpGraph.datasets.push(temp_data);
+
+                    });
+                //console.log(tmpGraph);
+            }
+        );
+
+        //console.log(tmpGraph);
+
+        return tmpGraph;
+    }
+    var myLine;
+
+    function replectData(){
+        //config_graph.data.dataset
+    }
+    var myLine;
+
+
+
+    setInterval(function(){
+
+        if(myLine != null){
+            var con = dataInit();
+            //console.log("yes")
+            var data_graph = getLoadData()
+            /*myLine.data.label = data_graph.label;
+            myLine.data.dataset = data_graph.datasets;*/
+
+            //var ctx = document.getElementById("canvas").getContext("2d");
+            //myLine = new Chart(ctx, cona);
+            setTimeout(function() {
+                var ctx = document.getElementById("canvas").getContext("2d");
+                myLine = new Chart(ctx, con);
+                myLine.update();
+                //document.write(JSON.stringify(con))
+            }, 1500)
+
+            //myLine.update();
+
+        }
+
+
+    }, 1000);
+
+
+    window.onload = function () {
+        var con = dataInit();
+        setTimeout(function() {
+            var ctx = document.getElementById("canvas").getContext("2d");
+            myLine = new Chart(ctx, con);
+            myLine.update();
+            //document.write(JSON.stringify(con))
+        }, 2550);
+
+    };
+
+
+
+
+
+</script>
+</body>
+</html>

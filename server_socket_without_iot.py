@@ -3,7 +3,7 @@ import hashlib
 import base64
 import threading
 import urllib.request
-import iot_server
+
 
 WS_MAGIC_STRING = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"
 
@@ -96,10 +96,7 @@ class WS(threading.Thread):
 
         try:
             decoded_payload = payload.decode('utf-8')
-            if iot_server.push_data(decoded_payload):
-                print("Push OK >> "+str(decoded_payload))
-            else:
-                print(decoded_payload)
+            print(decoded_payload)
 
             # Exit Command
             if "p" == decoded_payload.lower():
