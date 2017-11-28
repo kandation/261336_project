@@ -151,7 +151,7 @@ if __name__ == "__main__":
     with urllib.request.urlopen(url) as response:
         html = response.read()
         html = str(html.decode('ascii')).split(";")
-    html = ['','','']
+    html = ['128.199.90.20',9999,1000]
 
     print(html)
     TCP_IP =  str(html[0]) if html[0] != '' else "127.0.0.1"

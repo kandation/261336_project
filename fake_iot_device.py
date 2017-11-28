@@ -8,6 +8,7 @@ location_fake = ['Science Faculty', 'Engineering Faculty', 'CPE', 'Clock circus'
 
 websocket.enableTrace(True)
 #ws = websocket.create_connection("ws://188.166.212.91:9999/ww")
+#ws = websocket.create_connection("ws://128.199.90.20:9999/ww")
 ws = websocket.create_connection("ws://127.0.0.1:9999/ww")
 
 while True:
